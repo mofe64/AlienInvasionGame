@@ -1,6 +1,7 @@
 import sys
 import pygame
 from settings import Settings
+from Ship import Ship
 
 
 class AlienInvasion:
@@ -10,30 +11,38 @@ class AlienInvasion:
         """"Initialize the game and create game resources"""
         pygame.init()
         self.settings = Settings()
-        self.screen = pygame.display.set_mode(  # creates a display window(called a surface) of size 1200 by 800
-            (self.settings.screen_height, self.settings.screen_width)
-            # surface is part of screen where a game element can be displayed
-        )  # surface returned by display.set_mode reps the games entire window,
-        # when game animation loop is activated, this surface will be redrawn on every pass of the loop,
-        # so it can be updated by with any changes triggered by user input
+        self.screen = pygame.display.set_mode((self.settings.screen_height, self.settings.screen_width))
         pygame.display.set_caption("Alien invasion")
-        # colors in pygame are specified as RGB values¶
+        self.ship = Ship(self)
 
-    # game is controlled by the run_game method
     def run_game(self):
         """"Start the main loop for the game"""
-        while True:  # contains a while loop which runs continuously
-            # Watch for keyboard and mouse events
-            for event in pygame.event.get():  # event loop that manages screen updates.
-                # Listens for events and performs actions based on events
-                # An event is an action user performs when playing game
-                # pygame.event.get returns a list of events that have taken place since function last called
-                if event.type == pygame.QUIT:
-                    sys.exit()
-            self.screen.fill(self.settings.bg_color)  # Fill screen with background color
-            # Tells Pygame to make the most recently drawn screen visible
-            pygame.display.flip()  # continually updates the display to show the new position
-            # of game elements giving the illusion of movement
+        while True:
+            self._check_events()
+            self.ship.update()
+            self._update_screen()
+
+    def _check_events(self):
+        """Respond to keypress and mouse events"""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    self.ship.moving_right = True
+                elif event.key == pygame.K_LEFT:
+                    self.ship.moving_left = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT:
+                    self.ship.moving_right = False
+                elif event.key == pygame.K_LEFT:
+                    self.ship.moving_left = False
+
+    def _update_screen(self):
+        """Updates images on the screen, and flips to new screen"""
+        self.screen.fill(self.settings.bg_color)
+        self.ship.blitme()
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
